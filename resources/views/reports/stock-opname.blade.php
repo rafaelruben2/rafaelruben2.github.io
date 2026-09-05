@@ -1,0 +1,5 @@
+<!doctype html>
+<html lang="id">
+<head><meta charset="utf-8"><title>Hasil Opname {{ $session->code }}</title><style>body{font-family:Arial,sans-serif;color:#17332f;margin:40px}h1{margin-bottom:4px}p{color:#667873}table{border-collapse:collapse;margin-top:28px;width:100%}th,td{border:1px solid #dce5e1;padding:9px;text-align:left;font-size:12px}th{background:#eef5f1;font-size:10px;text-transform:uppercase}@media print{.print{display:none}}</style></head>
+<body><button class="print" onclick="window.print()">Cetak / Simpan PDF</button><h1>Hasil Stock Opname</h1><p>{{ $session->code }} · {{ $session->opname_date?->format('d M Y') }} · Status: {{ $session->status }}</p><table><thead><tr><th>Item</th><th>Sistem</th><th>Fisik</th><th>Selisih</th><th>Alasan</th></tr></thead><tbody>@foreach($session->items as $item)<tr><td>{{ $item->product_id }}</td><td>{{ $item->system_quantity }}</td><td>{{ $item->physical_quantity ?? '-' }}</td><td>{{ $item->difference_quantity ?? '-' }}</td><td>{{ $item->difference_reason ?? '-' }}</td></tr>@endforeach</tbody></table></body>
+</html>
