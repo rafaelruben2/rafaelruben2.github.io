@@ -15,4 +15,5 @@ Route::post('/logout', [LoginController::class, 'destroy'])
 Route::middleware('auth')->group(function (): void {
     require __DIR__.'/dashboard.php';
     require __DIR__.'/stock-opname.php';
+    require __DIR__.'/users.php';
 });
