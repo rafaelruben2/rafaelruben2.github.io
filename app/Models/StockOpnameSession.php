@@ -4,20 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class StockOpnameSessions extends Model
+class StockOpnameSession extends Model
 {
     protected $fillable = [
         'code', 'opname_date', 'type', 'status',
         'created_by', 'verified_by', 'approved_by',
         'snapshot_at', 'reviewed_at', 'approved_at', 'approval_note',
     ];
+
     protected $casts = [
         'opname_date' => 'datetime',
         'snapshot_at' => 'datetime',
         'reviewed_at' => 'datetime',
         'approved_at' => 'datetime',
     ];
-     public function items()
+
+    public function items()
     {
         return $this->hasMany(StockOpnameItem::class, 'stock_opname_session_id');
     }
@@ -42,7 +44,6 @@ class StockOpnameSessions extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
-    // Progress hitung fisik
     public function getTotalItemsAttribute(): int
     {
         return $this->items()->count();
@@ -56,6 +57,7 @@ class StockOpnameSessions extends Model
     public function getProgressPercentAttribute(): int
     {
         $total = $this->total_items;
+
         return $total > 0 ? (int) round(($this->counted_items / $total) * 100) : 0;
     }
 
@@ -64,7 +66,6 @@ class StockOpnameSessions extends Model
         return $this->total_items > 0 && $this->counted_items === $this->total_items;
     }
 
-    // Scopes berguna
     public function scopeInProgress($query)
     {
         return $query->whereIn('status', ['draft', 'counting']);

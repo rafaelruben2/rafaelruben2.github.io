@@ -14,18 +14,18 @@ class StockOpnameItem extends Model
     ];
 
     protected $casts = [
-        'system_quantity'     => 'decimal:3',
-        'physical_quantity'   => 'decimal:3',
+        'system_quantity' => 'decimal:3',
+        'physical_quantity' => 'decimal:3',
         'difference_quantity' => 'decimal:3',
-        'is_significant'      => 'boolean',
-        'counted_at'          => 'datetime',
-        'reconciled_at'       => 'datetime',
-        'posted_at'           => 'datetime',
+        'is_significant' => 'boolean',
+        'counted_at' => 'datetime',
+        'reconciled_at' => 'datetime',
+        'posted_at' => 'datetime',
     ];
 
     public function session()
     {
-        return $this->belongsTo(StockOpnameSessions::class, 'stock_opname_session_id');
+        return $this->belongsTo(StockOpnameSession::class, 'stock_opname_session_id');
     }
 
     public function product()
@@ -50,6 +50,6 @@ class StockOpnameItem extends Model
 
     public function getIsCountedAttribute(): bool
     {
-        return !is_null($this->physical_quantity);
+        return ! is_null($this->physical_quantity);
     }
 }
