@@ -3,7 +3,28 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $stock_opname_session_id
+ * @property int $product_id
+ * @property int|null $product_batch_id
+ * @property int|null $warehouse_location_id
+ * @property string|int|float $system_quantity
+ * @property string|int|float|null $physical_quantity
+ * @property string|int|float|null $difference_quantity
+ * @property string|null $condition
+ * @property string|null $difference_reason
+ * @property string|null $difference_note
+ * @property bool $is_significant
+ * @property int|null $counted_by
+ * @property Carbon|null $counted_at
+ * @property Carbon|null $reconciled_at
+ * @property Carbon|null $posted_at
+ * @property string|null $notes
+ * @property-read bool $is_counted
+ */
 class StockOpnameItem extends Model
 {
     protected $fillable = [

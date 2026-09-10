@@ -4,6 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $stock_opname_session_id
+ * @property int $user_id
+ * @property string $action
+ * @property string|null $note
+ */
 class StockOpnameApproval extends Model
 {
     protected $fillable = [

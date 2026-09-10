@@ -3,7 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property string $code
+ * @property Carbon $opname_date
+ * @property string $type
+ * @property string $status
+ * @property int|null $created_by
+ * @property int|null $verified_by
+ * @property int|null $approved_by
+ * @property Carbon|null $snapshot_at
+ * @property Carbon|null $reviewed_at
+ * @property Carbon|null $approved_at
+ * @property string|null $approval_note
+ * @property-read int $total_items
+ * @property-read int $counted_items
+ * @property-read int $progress_percent
+ * @property-read bool $is_fully_counted
+ */
 class StockOpnameSession extends Model
 {
     protected $fillable = [
