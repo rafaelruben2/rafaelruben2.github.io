@@ -5,7 +5,7 @@
         </a>
     </div>
     <nav class="nav-list" aria-label="Navigasi utama">
-        <a class="nav-item active" href="{{ route('dashboard') }}"><span class="nav-icon">▦</span> Ikhtisar</a>
+        <a class="nav-item active" href="{{ route('dashboard') }}"><span class="nav-icon">▦</span> Dashboard</a>
         <p class="nav-label">OPERASIONAL</p>
         <a class="nav-item" href="{{ route('opname.sessions.index') }}"><span class="nav-icon">◷</span> Sesi stock opname <b>3</b></a>
         <a class="nav-item" href="{{ route('opname.sessions.index') }}#hitung"><span class="nav-icon">⌁</span> Hitung fisik</a>

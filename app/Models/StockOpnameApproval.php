@@ -2,15 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+ use Illuminate\Database\Eloquent\Model;
 
 class StockOpnameApproval extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'stock_opname_session_id', 'user_id', 'action', 'note',
+        'created_at', 'updated_at',
+        ];
 
-    public function session(): BelongsTo
+    public function session()
     {
-        return $this->belongsTo(StockOpnameSession::class, 'stock_opname_session_id');
+        return $this->belongsTo(StockOpnameSessions::class, 'stock_opname_session_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }
