@@ -16,7 +16,7 @@ class ItemController extends Controller
         abort_unless($session->canBeCountedBy($user), 403, 'Sesi tidak dapat diubah pada tahap ini.');
         $validated = $request->validate([
             'physical_quantity' => ['required', 'numeric', 'min:0'],
-            'condition' => ['nullable', 'in:good,damaged,expired,not_found'],
+            'condition' => ['required', 'in:good,damaged,expired,not_found'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'evidence' => ['nullable', 'image', 'max:5120'],
         ]);

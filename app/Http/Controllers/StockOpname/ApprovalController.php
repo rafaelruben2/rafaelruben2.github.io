@@ -35,7 +35,7 @@ class ApprovalController extends Controller
         $user = auth()->user();
         abort_unless($user->hasRole('admin', 'supervisor'), 403);
         abort_unless($session->status === 'verification', 422, 'Sesi belum masuk tahap verifikasi.');
-        $validated = $request->validate(['action' => ['required', 'in:approved,recount_requested'], 'verification_note' => ['nullable', 'string', 'max:1000']]);
+        $validated = $request->validate(['action' => ['required', 'in:approved,recount_requested'], 'verification_note' => ['required_if:action,recount_requested', 'nullable', 'string', 'max:1000']]);
         $item->update([
             'verification_status' => $validated['action'] === 'approved' ? 'approved' : 'recount_requested',
             'recount_requested' => $validated['action'] === 'recount_requested',

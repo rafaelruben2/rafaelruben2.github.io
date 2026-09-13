@@ -63,7 +63,7 @@ class StockOpnameWorkflowTest extends TestCase
         $session = StockOpnameSession::firstOrFail();
         $item = StockOpnameItem::firstOrFail();
 
-        $this->post(route('opname.items.reconcile', $item), ['_token' => $csrfToken, 'physical_quantity' => 94, 'difference_reason' => 'missing', 'difference_note' => 'Selisih hasil hitung rak'])
+        $this->post(route('opname.items.reconcile', $item), ['_token' => $csrfToken, 'physical_quantity' => 94, 'condition' => 'good', 'difference_reason' => 'missing', 'difference_note' => 'Selisih hasil hitung rak'])
             ->assertSessionHas('success');
         $this->post(route('opname.sessions.review', $session), ['_token' => $csrfToken])->assertSessionHas('success');
         $this->post(route('opname.sessions.approve', $session), ['_token' => $csrfToken, 'approval_note' => 'Disetujui setelah review'])
@@ -94,7 +94,7 @@ class StockOpnameWorkflowTest extends TestCase
 
         $this->actingAs($pimpinan)->post(route('opname.items.reconcile', $item), ['physical_quantity' => 49])
             ->assertForbidden();
-        $this->actingAs($staff)->post(route('opname.items.reconcile', $item), ['physical_quantity' => 49, 'difference_reason' => 'missing', 'difference_note' => 'Tidak ditemukan'])
+        $this->actingAs($staff)->post(route('opname.items.reconcile', $item), ['physical_quantity' => 49, 'condition' => 'good', 'difference_reason' => 'missing', 'difference_note' => 'Tidak ditemukan'])
             ->assertSessionHas('success');
         $this->actingAs($supervisor)->post(route('opname.sessions.review', $session))->assertSessionHas('success');
         $this->actingAs($supervisor)->post(route('opname.items.verify', $item), ['action' => 'approved'])
@@ -104,6 +104,35 @@ class StockOpnameWorkflowTest extends TestCase
         $this->actingAs($pimpinan)->post(route('opname.sessions.approve', $session), ['approval_note' => 'Sign-off final'])
             ->assertSessionHas('success');
         $this->assertDatabaseHas('stock_opname_sessions', ['id' => $session->id, 'status' => 'approved']);
+    }
+
+    public function test_session_creation_rejects_missing_required_fields(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)
+            ->post(route('opname.sessions.store'), ['opname_date' => '', 'type' => ''])
+            ->assertSessionHasErrors(['opname_date', 'type']);
+
+        $this->assertDatabaseCount('stock_opname_sessions', 0);
+    }
+
+    public function test_item_counting_rejects_a_missing_condition(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $category = ProductCategory::create(['name' => 'Teh', 'slug' => 'teh']);
+        $location = WarehouseLocation::create(['code' => 'C-01', 'name' => 'Rak C-01']);
+        $product = Product::create(['product_category_id' => $category->id, 'sku' => 'TTJ-005', 'barcode' => '899005', 'name' => 'Teh Hijau']);
+        StockBalance::create(['product_id' => $product->id, 'warehouse_location_id' => $location->id, 'quantity' => 20]);
+
+        $this->actingAs($admin)->post(route('opname.sessions.store'), [
+            'opname_date' => '2026-09-13',
+            'type' => 'full',
+        ]);
+        $item = StockOpnameItem::firstOrFail();
+
+        $this->post(route('opname.items.reconcile', $item), ['physical_quantity' => 20])
+            ->assertSessionHasErrors('condition');
     }
 
     public function test_admin_can_create_a_product_but_staff_cannot(): void
