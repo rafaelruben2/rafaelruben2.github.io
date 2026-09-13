@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\StockBalance;
 use App\Models\StockOpnameSession;
-use App\Models\User;
 use App\Models\WarehouseLocation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,8 +16,9 @@ class ImportController extends Controller
 {
     public function import(Request $request): RedirectResponse
     {
+        abort_unless(auth()->user()->hasRole('admin'), 403);
         $validated = $request->validate(['file' => ['required', 'file', 'mimes:csv,txt', 'max:10240']]);
-        $user = User::firstOrFail();
+        $user = auth()->user();
         $path = $validated['file']->getRealPath();
         $handle = fopen($path, 'r');
         $headers = array_map(fn ($header): string => strtolower(trim((string) $header)), fgetcsv($handle) ?: []);
@@ -53,6 +53,9 @@ class ImportController extends Controller
 
     public function export(StockOpnameSession $session): StreamedResponse
     {
+        $user = auth()->user();
+        abort_unless($user->hasRole('admin', 'pimpinan') || $session->created_by === $user->id || $session->supervisor_id === $user->id || $session->assignedStaff()->whereKey($user->id)->exists(), 403);
+
         return response()->streamDownload(function () use ($session): void {
             $handle = fopen('php://output', 'w');
             fputcsv($handle, ['SKU', 'Stok Sistem', 'Fisik', 'Selisih', 'Alasan', 'Catatan']);

@@ -16,4 +16,5 @@ Route::middleware('auth')->group(function (): void {
     require __DIR__.'/dashboard.php';
     require __DIR__.'/stock-opname.php';
     require __DIR__.'/users.php';
+    require __DIR__.'/products.php';
 });

@@ -14,10 +14,14 @@ use Illuminate\Support\Carbon;
  * @property int|null $created_by
  * @property int|null $verified_by
  * @property int|null $approved_by
+ * @property int|null $supervisor_id
  * @property Carbon|null $snapshot_at
  * @property Carbon|null $reviewed_at
  * @property Carbon|null $approved_at
+ * @property Carbon|null $closed_at
  * @property string|null $approval_note
+ * @property string|int|float $tolerance_percent
+ * @property string|int|float $approval_threshold
  * @property-read int $total_items
  * @property-read int $counted_items
  * @property-read int $progress_percent
@@ -28,7 +32,8 @@ class StockOpnameSession extends Model
     protected $fillable = [
         'code', 'opname_date', 'type', 'status',
         'created_by', 'verified_by', 'approved_by',
-        'snapshot_at', 'reviewed_at', 'approved_at', 'approval_note',
+        'supervisor_id', 'snapshot_at', 'reviewed_at', 'approved_at', 'approval_note',
+        'tolerance_percent', 'approval_threshold', 'closed_at',
     ];
 
     protected $casts = [
@@ -36,6 +41,9 @@ class StockOpnameSession extends Model
         'snapshot_at' => 'datetime',
         'reviewed_at' => 'datetime',
         'approved_at' => 'datetime',
+        'closed_at' => 'datetime',
+        'tolerance_percent' => 'decimal:2',
+        'approval_threshold' => 'decimal:2',
     ];
 
     public function items()
@@ -61,6 +69,30 @@ class StockOpnameSession extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function supervisor()
+    {
+        return $this->belongsTo(User::class, 'supervisor_id');
+    }
+
+    public function assignedStaff()
+    {
+        return $this->belongsToMany(User::class, 'stock_opname_session_user')
+            ->withPivot('assignment_role')->withTimestamps();
+    }
+
+    public function auditLogs()
+    {
+        return $this->morphMany(AuditLog::class, 'auditable');
+    }
+
+    public function canBeCountedBy(User $user): bool
+    {
+        return $this->status === 'counting'
+            && ($user->hasRole('admin') || $user->id === $this->created_by
+                || $this->assignedStaff()->whereKey($user->id)->exists()
+                || $user->role === 'manager');
     }
 
     public function getTotalItemsAttribute(): int

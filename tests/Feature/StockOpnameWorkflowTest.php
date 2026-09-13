@@ -10,6 +10,8 @@ use App\Models\StockOpnameSession;
 use App\Models\User;
 use App\Models\WarehouseLocation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class StockOpnameWorkflowTest extends TestCase
@@ -70,5 +72,79 @@ class StockOpnameWorkflowTest extends TestCase
         $this->assertDatabaseHas('stock_opname_sessions', ['id' => $session->id, 'status' => 'approved']);
         $this->assertDatabaseHas('stock_balances', ['product_id' => $product->id, 'quantity' => 94]);
         $this->assertDatabaseHas('stock_opname_approvals', ['stock_opname_session_id' => $session->id, 'action' => 'approved']);
+    }
+
+    public function test_staff_can_only_count_an_assigned_session_and_supervisor_verification_requires_final_approval(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $staff = User::factory()->create(['role' => 'staff_gudang']);
+        $supervisor = User::factory()->create(['role' => 'supervisor']);
+        $pimpinan = User::factory()->create(['role' => 'pimpinan']);
+        $category = ProductCategory::create(['name' => 'Teh', 'slug' => 'teh']);
+        $location = WarehouseLocation::create(['code' => 'B-01', 'name' => 'Rak B-01']);
+        $product = Product::create(['product_category_id' => $category->id, 'sku' => 'TTJ-002', 'barcode' => '899002', 'name' => 'Teh Hitam']);
+        StockBalance::create(['product_id' => $product->id, 'warehouse_location_id' => $location->id, 'quantity' => 50]);
+
+        $this->actingAs($admin)->post(route('opname.sessions.store'), [
+            'opname_date' => '2026-09-13', 'type' => 'full', 'supervisor_id' => $supervisor->id,
+            'staff_ids' => [$staff->id], 'tolerance_percent' => 5, 'approval_threshold' => 1000,
+        ]);
+        $session = StockOpnameSession::firstOrFail();
+        $item = StockOpnameItem::firstOrFail();
+
+        $this->actingAs($pimpinan)->post(route('opname.items.reconcile', $item), ['physical_quantity' => 49])
+            ->assertForbidden();
+        $this->actingAs($staff)->post(route('opname.items.reconcile', $item), ['physical_quantity' => 49, 'difference_reason' => 'missing', 'difference_note' => 'Tidak ditemukan'])
+            ->assertSessionHas('success');
+        $this->actingAs($supervisor)->post(route('opname.sessions.review', $session))->assertSessionHas('success');
+        $this->actingAs($supervisor)->post(route('opname.items.verify', $item), ['action' => 'approved'])
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('stock_opname_sessions', ['id' => $session->id, 'status' => 'pending_approval']);
+        $this->actingAs($pimpinan)->post(route('opname.sessions.approve', $session), ['approval_note' => 'Sign-off final'])
+            ->assertSessionHas('success');
+        $this->assertDatabaseHas('stock_opname_sessions', ['id' => $session->id, 'status' => 'approved']);
+    }
+
+    public function test_admin_can_create_a_product_but_staff_cannot(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $staff = User::factory()->create(['role' => 'staff_gudang']);
+        $category = ProductCategory::create(['name' => 'Minuman', 'slug' => 'minuman']);
+
+        $this->actingAs($staff)->get(route('products.create'))->assertForbidden();
+        $this->actingAs($admin)->get(route('products.create'))->assertOk();
+        $this->actingAs($admin)->post(route('products.store'), [
+            'product_category_id' => $category->id,
+            'sku' => 'TTJ-003',
+            'barcode' => '899003',
+            'name' => 'Teh Melati',
+            'unit' => 'pcs',
+            'unit_conversion' => 1,
+            'is_active' => 1,
+        ])->assertRedirect(route('products.index'));
+
+        $this->assertDatabaseHas('products', ['sku' => 'TTJ-003', 'name' => 'Teh Melati']);
+    }
+
+    public function test_admin_can_upload_a_product_image(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['role' => 'admin']);
+        $category = ProductCategory::create(['name' => 'Makanan', 'slug' => 'makanan']);
+
+        $this->actingAs($admin)->post(route('products.store'), [
+            'product_category_id' => $category->id,
+            'sku' => 'TTJ-004',
+            'barcode' => '899004',
+            'name' => 'Biskuit Teh',
+            'unit' => 'pcs',
+            'unit_conversion' => 1,
+            'is_active' => 1,
+            'image' => UploadedFile::fake()->image('biskuit-teh.jpg'),
+        ])->assertRedirect(route('products.index'));
+
+        $product = Product::where('sku', 'TTJ-004')->firstOrFail();
+        Storage::disk('public')->assertExists($product->image_path);
     }
 }

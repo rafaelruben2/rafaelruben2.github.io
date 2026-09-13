@@ -10,8 +10,17 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 #[Hidden(['password', 'remember_token'])]
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property string $role
+ * @property string $status
+ */
 class User extends Authenticatable
 {
+    public const ROLES = ['admin', 'staff_gudang', 'supervisor', 'pimpinan'];
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
@@ -30,5 +39,12 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function hasRole(string ...$roles): bool
+    {
+        $role = $this->role === 'manager' ? 'pimpinan' : $this->role;
+
+        return in_array($role, $roles, true);
     }
 }

@@ -32,6 +32,8 @@ class StockOpnameItem extends Model
         'system_quantity', 'physical_quantity', 'difference_quantity',
         'condition', 'difference_reason', 'difference_note', 'is_significant',
         'counted_by', 'counted_at', 'reconciled_at', 'posted_at', 'notes',
+        'verification_status', 'verified_by', 'verified_at', 'verification_note',
+        'evidence_path', 'recount_requested',
     ];
 
     protected $casts = [
@@ -42,6 +44,8 @@ class StockOpnameItem extends Model
         'counted_at' => 'datetime',
         'reconciled_at' => 'datetime',
         'posted_at' => 'datetime',
+        'verified_at' => 'datetime',
+        'recount_requested' => 'boolean',
     ];
 
     public function session()

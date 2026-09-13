@@ -9,14 +9,15 @@
         <p class="nav-label">OPERASIONAL</p>
         <a class="nav-item" href="{{ route('opname.sessions.index') }}"><span class="nav-icon">◷</span> Sesi stock opname <b>3</b></a>
         <a class="nav-item" href="{{ route('opname.sessions.index') }}#hitung"><span class="nav-icon">⌁</span> Hitung fisik</a>
-        <a class="nav-item" href="{{ route('opname.sessions.index') }}#import"><span class="nav-icon">↥</span> Import stok awal</a>
+        @if(auth()->user()->hasRole('admin'))<a class="nav-item" href="{{ route('opname.sessions.index') }}#import"><span class="nav-icon">↥</span> Import stok awal</a>@endif
         <p class="nav-label">MASTER DATA</p>
-        <a class="nav-item" href="{{ route('dashboard') }}#produk"><span class="nav-icon">□</span> Produk &amp; batch</a>
+        @if(auth()->user()->hasRole('admin'))<a class="nav-item" href="{{ route('products.index') }}"><span class="nav-icon">□</span> Produk &amp; batch</a>@else<a class="nav-item" href="{{ route('dashboard') }}#produk"><span class="nav-icon">□</span> Produk &amp; batch</a>@endif
         <a class="nav-item" href="{{ route('dashboard') }}#produk"><span class="nav-icon">⌂</span> Lokasi &amp; rak</a>
         <a class="nav-item" href="{{ route('dashboard') }}#produk"><span class="nav-icon">◈</span> Kategori produk</a>
         <p class="nav-label">MANAJEMEN</p>
         <a class="nav-item" href="#laporan"><span class="nav-icon">▤</span> Laporan</a>
         <a class="nav-item" href="{{ route('users.index') }}"><span class="nav-icon">◎</span> Pengguna &amp; role</a>
+        @if(auth()->user()->hasRole('admin'))<a class="nav-item" href="{{ route('opname.audit') }}"><span class="nav-icon">⌘</span> Audit log</a>@endif
     </nav>
     <div class="sidebar-footer"><span class="avatar">{{ collect(explode(' ', auth()->user()->name))->map(fn ($name) => strtoupper(substr($name, 0, 1)))->take(2)->implode('') }}</span><span><strong>{{ auth()->user()->name }}</strong><small>Administrator</small></span><form method="POST" action="{{ route('logout') }}" onsubmit="return confirm('Apakah Anda yakin ingin keluar?');"><button class="more" type="submit" aria-label="Keluar">↪</button></form></div>
 </aside>

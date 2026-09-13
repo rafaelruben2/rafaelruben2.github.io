@@ -32,6 +32,7 @@ class DashboardController extends Controller
                 ['sku' => 'TTJ-PRM-050', 'name' => 'Premium Jasmine 50s', 'location' => 'Rak C-01', 'system' => '198', 'counted' => '—', 'status' => 'Belum dihitung', 'statusClass' => 'neutral'],
                 ['sku' => 'TTJ-TEH-050', 'name' => 'Teh Celup Hitam 50s', 'location' => 'Rak A-05', 'system' => '264', 'counted' => '261', 'status' => 'Selisih', 'statusClass' => 'warning'],
             ],
+            'canCreateSession' => auth()->user()->hasRole('admin', 'supervisor') || auth()->user()->role === 'manager',
         ]);
     }
 }

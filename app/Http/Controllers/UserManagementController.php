@@ -10,7 +10,7 @@ use Illuminate\View\View;
 
 class UserManagementController extends Controller
 {
-    private const ROLES = ['admin', 'supervisor', 'staff_gudang'];
+    private const ROLES = User::ROLES;
 
     private const STATUSES = ['aktif', 'nonaktif'];
 

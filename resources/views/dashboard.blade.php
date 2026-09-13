@@ -12,7 +12,7 @@
 
         <main class="main-content">
             @include('partials.header')
-            <section class="page-intro"><div><p class="eyebrow">{{ strtoupper($currentDate) }}</p><h1>{{ $greeting }}, {{ auth()->user()->name }}.</h1><p class="intro-copy">Pantau aktivitas stok dan pastikan setiap hitungan tercatat akurat.</p></div><a class="primary-button" href="{{ route('opname.create') }}"><span>＋</span> Buat sesi opname</a></section>
+            <section class="page-intro"><div><p class="eyebrow">{{ strtoupper($currentDate) }}</p><h1>{{ $greeting }}, {{ auth()->user()->name }}.</h1><p class="intro-copy">Pantau aktivitas stok dan pastikan setiap hitungan tercatat akurat.</p></div>@if($canCreateSession)<a class="primary-button" href="{{ route('opname.create') }}"><span>＋</span> Buat sesi opname</a>@endif</section>
 
             <section class="metric-grid" aria-label="Ringkasan stok">
                 @foreach ($metrics as $metric)<article class="metric-card {{ $metric['tone'] }}"><div class="metric-top"><span>{{ $metric['label'] }}</span><span class="metric-dot"></span></div><strong>{{ $metric['value'] }}</strong><small>{{ $metric['meta'] }}</small></article>@endforeach
